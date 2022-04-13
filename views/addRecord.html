@@ -1,0 +1,21 @@
+{{ template "headHTML" .}}
+{{ if le .Role 8 }}
+<h1>Search for user</h1>
+<form action="/" method="POST" id="form">
+    <label for="name">Display name / title</label><br>
+    <input type="text" name="name" id="name"><br>
+    <label for="price">Price</label><br>
+    <input type="text" name="price" id="price"><br>
+    <label for="description">Description of the product</label><br>
+    <input type="text" name="description" id="description"><br>
+    <label for="producer">Producer of the product</label><br>
+    <input type="text" name="producer" id="producer"><br>
+    <input type="file" multiple name="photos"><br>
+    <input type="submit"><br>
+</form>
+<div id="searchResults">
+</div>
+{{else}}
+<h1>You are not authorized, if you want to be apply for a job at: <br><a href="http://localhost:3000/job">Jakub jobs</a></h1>
+{{end}}
+{{ template "footerHTMLSec" .}}

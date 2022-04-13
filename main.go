@@ -1,0 +1,28 @@
+package main
+
+import (
+	"goMongoFiber/src/router"
+	"log"
+
+	"github.com/gofiber/fiber/v2"
+	"github.com/gofiber/template/html"
+)
+
+func main() {
+	engine := html.New("./views", ".html")
+	engine.Templates.ParseGlob("./views/partials/*")
+	app := fiber.New(fiber.Config{
+		Views: engine,
+	})
+	app.Static("/", "./views/statics/scripts/unsecure/")
+	router.Router(app)
+	log.Fatal(app.Listen(":3000"))
+}
+
+//TODO:
+
+//Elasticsearch and searchbar
+//Cart
+//Showing mostly buyed items on index page (elasticsearch?) it is needed to create dummy data to items
+//Comments
+//Front-End
