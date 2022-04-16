@@ -87,7 +87,7 @@ func Login(c *fiber.Ctx) error {
 		if erro != nil {
 			panic(erro)
 		} else {
-			err := createJWT(c, a.ID, a.Role)
+			err := createJWT(c, a.ID, a.Username, a.Role)
 			if err != nil {
 				errMsg := module.Error{Success: false, ErrorMessage: err.Error()}
 				c.JSON(&errMsg)
@@ -107,27 +107,51 @@ func IsLoggedIn(next func(c *fiber.Ctx) error) func(c *fiber.Ctx) error {
 		if token.Valid {
 			next(c)
 		} else {
+			cook := c.Cookies("authentication", "no_cook")
+			c.ClearCookie(cook)
 			c.Redirect("http://localhost:3000/login")
 		}
 		return nil
 	}
 }
 
-func IsLoggedInWithRoles(next func(c *fiber.Ctx, r int) error) func(c *fiber.Ctx) error {
+func IsLoggedInWithRoles(next func(c *fiber.Ctx, r int, user string, username string) error) func(c *fiber.Ctx) error {
 	return func(c *fiber.Ctx) error {
 		token := jwtToken(c)
 		if claims, ok := token.Claims.(jwt.MapClaims); ok && token.Valid {
 			role := int(claims["Role"].(float64))
-			next(c, role)
+			uID := claims["iss"].(string)
+			username := claims["Username"].(string)
+			next(c, role, uID, username)
 		} else {
+			cook := c.Cookies("authentication", "no_cook")
+			c.ClearCookie(cook)
 			c.Redirect("http://localhost:3000/login")
+		}
+		return nil
+	}
+}
+
+func NoVerfWithRoles(next func(c *fiber.Ctx, r int, user string, username string) error) func(c *fiber.Ctx) error {
+	return func(c *fiber.Ctx) error {
+		token := jwtToken(c)
+		if claims, ok := token.Claims.(jwt.MapClaims); ok && token.Valid {
+			role := int(claims["Role"].(float64))
+			uID := claims["iss"].(string)
+			username := claims["Username"].(string)
+			next(c, role, uID, username)
+		} else {
+			role := 32
+			uID := ""
+			username := "unregistered"
+			next(c, role, uID, username)
 		}
 		return nil
 	}
 }
 
 //Jak będą variable w link to trzeba będzie zrobić regexp
-func SecureJS(c *fiber.Ctx, role int) error {
+func SecureJS(c *fiber.Ctx, role int, user string, username string) error {
 	if role <= 8 {
 		p := c.Path()
 		r, _ := os.Getwd()

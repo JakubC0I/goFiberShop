@@ -5,11 +5,12 @@ form.addEventListener("submit", async (e) => {
     const description = form.description.value
     const name = form.name.value
     const price = form.price.value
+    const quantity = form.quantity.value
     const producer = form.producer.value
     e.preventDefault()
     const res = await fetch("/addRecord", {
         method: "POST",
-        body: JSON.stringify({name, price: parseFloat(price), description, producer, "images": files}),
+        body: JSON.stringify({ name, price: parseFloat(price), description, producer, quantity: parseInt(quantity), "images": files }),
         headers: {
             "Content-Type": "application/json"
         }

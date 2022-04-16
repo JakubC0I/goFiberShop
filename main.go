@@ -15,6 +15,7 @@ func main() {
 		Views: engine,
 	})
 	app.Static("/", "./views/statics/scripts/unsecure/")
+	app.Static("/", "./views/statics/images/")
 	router.Router(app)
 	log.Fatal(app.Listen(":3000"))
 }

@@ -30,7 +30,9 @@ type m struct {
 func Index(c *fiber.Ctx) error {
 	cook := c.Cookies("authentication", "no_cookie")
 	// normalnie powinno być wysyłane na podstawie najlepszych ocen (elasticsearch)
-	item.Find(context.Background(), bson.D{"", ""})
+	resu := make(chan []module.Item)
+	wg.Add(1)
+	go top(c, resu)
 	if cook == "no_cookie" {
 		p := "index"
 		fmt.Println(p)
@@ -38,6 +40,7 @@ func Index(c *fiber.Ctx) error {
 			"Title": module.P.Index,
 			"Path":  "/" + p,
 			"Role":  32,
+			"Top20": <-resu,
 		})
 		return err
 	} else {
@@ -50,32 +53,36 @@ func Index(c *fiber.Ctx) error {
 				"Title": module.P.Index,
 				"Path":  "/" + p,
 				"Role":  role,
+				"Top20": <-resu,
 			})
 			return err
 		} else {
 			c.Redirect("http://localhost:3000/login")
 		}
 	}
-
+	wg.Wait()
 	return nil
+
 }
 
 //From editor
-func AddRecord(c *fiber.Ctx, role int) error {
-	var items struct {
-		ID          primitive.ObjectID `json:"_id,omitempty" bson:"_id,omitempty"`
-		Name        string             `json:"name,omitempty" bson:"name,omitempty"`
-		Description string             `json:"description,omitempty" bson:"description,omitempty"`
-		Price       float32            `json:"price,omitempty" bson:"price,omitempty"`
-		Producer    string             `json:"producer,omitempty" bson:"producer,omitempty"`
-		Images      []string           `json:"images,omitempty" bson:"images,omitempty"`
-	}
+func AddRecord(c *fiber.Ctx, role int, user string, username string) error {
+	// var items struct {
+	// ID          primitive.ObjectID `json:"_id,omitempty" bson:"_id,omitempty"`
+	// Name        string             `json:"name,omitempty" bson:"name,omitempty"`
+	// Description string             `json:"description,omitempty" bson:"description,omitempty"`
+	// Price       float32            `json:"price,omitempty" bson:"price,omitempty"`
+	// Producer    string             `json:"producer,omitempty" bson:"producer,omitempty"`
+	// Images      []string           `json:"images,omitempty" bson:"images,omitempty"`
+	// }
+	var items module.Item
 	if role <= 8 {
 		fmt.Println(role)
 		b := c.Request().Body()
 		r := bytes.NewReader(b)
 		json.NewDecoder(r).Decode(&items)
 		// fmt.Println(items)
+		items.Rating = 6
 		if items.Name == "" || items.Producer == "" || items.Description == "" || items.Price == 0 {
 			me := m{false, "All field required"}
 			c.JSON(&me)
@@ -84,6 +91,7 @@ func AddRecord(c *fiber.Ctx, role int) error {
 			go func() {
 				id := strconv.FormatInt(time.Now().Unix()+rand.Int63(), 16)
 				for k, v := range items.Images {
+					name := make(chan string)
 					coI := strings.Index(v, ",")
 					vB := []byte(v)
 					value := vB[coI+1:]
@@ -103,11 +111,15 @@ func AddRecord(c *fiber.Ctx, role int) error {
 						switch strings.TrimSuffix(v[5:coI], ";base64") {
 						case "image/png":
 							imgPng, _ := png.Decode(<-reader)
-							out, _ := os.Create("views/statics/images/" + sid + "png")
+							sid = sid + "png"
+							name <- sid
+							out, _ := os.Create("views/statics/images/" + sid)
 							png.Encode(out, imgPng)
 						case "image/jpeg":
 							imgJpeg, _ := jpeg.Decode(<-reader)
-							out, _ := os.Create("views/statics/images/" + sid + "jpeg")
+							sid = sid + "jpeg"
+							name <- sid
+							out, _ := os.Create("views/statics/images/" + sid)
 							err := jpeg.Encode(out, imgJpeg, &jpeg.Options{
 								Quality: 100,
 							})
@@ -118,8 +130,7 @@ func AddRecord(c *fiber.Ctx, role int) error {
 						}
 						wg.Done()
 					}()
-					fmt.Println(sid)
-					items.Images[k] = sid
+					items.Images[k] = <-name
 				}
 				item.InsertOne(context.Background(), &items)
 				wg.Wait()
@@ -140,6 +151,149 @@ func AddRecord(c *fiber.Ctx, role int) error {
 	return nil
 }
 
-func search() {
-	//This function should be connected with elasticsearch to perform search
+func SendHTML(c *fiber.Ctx) error {
+	cook := c.Cookies("authentication", "no_cookie")
+	p := html(c)
+	// normalnie powinno być wysyłane na podstawie najlepszych ocen (elasticsearch)
+	if cook == "no_cookie" {
+		fmt.Println(p)
+		err := c.Render(p[1:], fiber.Map{
+			"Title": module.P.Index,
+			"Path":  p,
+			"Role":  32,
+		})
+		return err
+	} else {
+		token := jwtToken(c)
+		if claims, ok := token.Claims.(jwt.MapClaims); ok && token.Valid {
+			role := int(claims["Role"].(float64))
+			fmt.Println(p)
+			err := c.Render(p[1:], fiber.Map{
+				"Title": module.P.Index,
+				"Path":  p,
+				"Role":  role,
+			})
+			return err
+		} else {
+			c.Redirect("http://localhost:3000/login")
+		}
+	}
+	return nil
+
+}
+
+func SendHTMLroles(c *fiber.Ctx, role int, user string, username string) error {
+	path := html(c)
+	err := c.Render(path[1:], fiber.Map{
+		"Title":    strings.ToUpper(path[1:]),
+		"Path":     path,
+		"Role":     role,
+		"User":     user,
+		"Username": username,
+	})
+	return err
+}
+
+func Product(c *fiber.Ctx, role int, uID string, username string) error {
+	var items module.Item
+	param := c.Params("id")
+	fmt.Println(param)
+	id, err := primitive.ObjectIDFromHex(param)
+	if err != nil {
+		fmt.Println(err)
+	}
+	resu := item.FindOne(context.Background(), bson.D{{Key: "_id", Value: id}})
+	resu.Decode(&items)
+	items.HexID = items.ID.Hex()
+	path := html(c)
+	err = c.Render(path[1:], fiber.Map{
+		"Title":  strings.ToUpper(path[1:]),
+		"Path":   path,
+		"Role":   role,
+		"Result": items,
+	})
+	return err
+}
+
+func AddComment(c *fiber.Ctx, role int, user string, username string) error {
+	if role <= 16 {
+		id := c.Params("id")
+		var comm module.Comment
+		c.BodyParser(&comm)
+		oid, err := primitive.ObjectIDFromHex(id)
+		if err != nil {
+			fmt.Println(err)
+		}
+		if err != nil {
+			fmt.Println(err)
+		}
+		comm.CreatedAt = time.Now()
+		comm.Username = username
+
+		resu, err := comment.InsertOne(context.Background(), &comm)
+		if err != nil {
+			fmt.Println(err.Error())
+			panic(err)
+		}
+		resuID := resu.InsertedID.(primitive.ObjectID)
+
+		item.UpdateOne(context.Background(), bson.M{"_id": oid}, bson.M{"$addToSet": bson.M{"comments": resuID}})
+		m := module.Error{Success: true, ErrorMessage: "Comment has been added!"}
+		c.JSON(&m)
+	} else {
+		m := module.Error{Success: false, ErrorMessage: "Please login to create a comment"}
+		c.JSON(&m)
+	}
+	return nil
+}
+
+func ViewComments(c *fiber.Ctx) error {
+	id := c.Params("id")
+	oid, err := primitive.ObjectIDFromHex(id)
+	if err != nil {
+		c.JSON(err.Error())
+	}
+	// s := c.Params("skip")
+	// skip, err := strconv.Atoi(s)
+	// if err != nil {
+	// 	fmt.Println(err)
+	// }
+	// l := c.Params("limit")
+	// limit, err := strconv.Atoi(l)
+	// if err != nil {
+	// 	fmt.Println(err)
+	// }
+
+	var it module.Item
+	res := item.FindOne(context.Background(), bson.M{"_id": oid})
+	res.Decode(&it)
+	if it.Comments == nil {
+		m := module.Error{
+			Success:      false,
+			ErrorMessage: "No comments",
+		}
+		c.JSON(&m)
+	} else {
+		var commentIds []primitive.ObjectID
+		commentIds = append(commentIds, it.Comments...)
+		fmt.Println(commentIds)
+		results, err := comment.Find(context.Background(), bson.M{"_id": bson.M{"$in": commentIds}})
+		if err != nil {
+			fmt.Println(err)
+		}
+
+		var comm module.Comment
+		var comms []module.Comment
+
+		for results.Next(context.Background()) {
+			results.Decode(&comm)
+			comms = append(comms, comm)
+		}
+		cs := struct {
+			Comments []module.Comment `json:"comments"`
+		}{Comments: comms}
+		fmt.Println(cs)
+		c.JSON(&cs)
+	}
+	return nil
 }
