@@ -4,7 +4,7 @@ const addCart = document.getElementById("cart")
 const id = location.pathname.substr(8)
 const field = document.getElementById("comments")
 const img = document.getElementById("images").firstElementChild.src
-const price = document.getElementById("price").innerText
+const price = parseFloat(parseFloat(document.getElementById("price").innerText).toFixed(2))
 const productName = document.getElementById("productName").innerText
 btn.addEventListener("click", (e) => {
     e.preventDefault()
@@ -43,7 +43,7 @@ vCbtn.addEventListener("click", async (e) => {
 
 function create(prod, index) {
     prod.products.splice(index, 1)
-    prod.products.push({ "product": id, "quantity": parseInt(quantity), img, "price": parseFloat(price), productName })
+    prod.products.push({ "product": id, "quantity": parseInt(quantity), img, "price": price, productName })
     console.log(JSON.stringify(prod));
     window.localStorage.setItem("productIds", JSON.stringify(prod))
 }
@@ -57,7 +57,7 @@ addCart.addEventListener("click", (e) => {
         const id = document.getElementById("oID").innerText
         const ids = []
         if (window.localStorage.getItem("productIds") == null) {
-            ids.push(JSON.stringify({ "products": [{ "product": id, "quantity": parseInt(quantity), img, "price": parseFloat(price), productName }] }))
+            ids.push(JSON.stringify({ "products": [{ "product": id, "quantity": parseInt(quantity), img, "price": price, productName, qMax: parseInt(q.max) }] }))
             window.localStorage.setItem("productIds", ids)
         } else {
             let products = window.localStorage.getItem("productIds")
@@ -70,12 +70,12 @@ addCart.addEventListener("click", (e) => {
                     prod.products.splice(index, 1)
                     if (quantity > parseInt(q.max)) {
                         quantity = parseInt(q.max)
-                        prod.products.push({ "product": id, "quantity": parseInt(quantity), img, "price": parseFloat(price), productName })
+                        prod.products.push({ "product": id, "quantity": parseInt(quantity), img, "price": price, productName, qMax: parseInt(q.max) })
                         console.log(JSON.stringify(prod));
                         window.localStorage.setItem("productIds", JSON.stringify(prod))
                         x = false
                     } else {
-                        prod.products.push({ "product": id, "quantity": parseInt(quantity), img, "price": parseFloat(price), productName })
+                        prod.products.push({ "product": id, "quantity": parseInt(quantity), img, "price": price, productName, qMax: parseInt(q.max) })
                         console.log(JSON.stringify(prod));
                         window.localStorage.setItem("productIds", JSON.stringify(prod))
                         x = false
@@ -83,7 +83,7 @@ addCart.addEventListener("click", (e) => {
                 }
             }
             if (x) {
-                prod.products.push({ "product": id, "quantity": parseInt(quantity), img, "price": parseFloat(price), productName })
+                prod.products.push({ "product": id, "quantity": parseInt(quantity), img, "price": price, productName, qMax: parseInt(q.max)})
                 console.log(JSON.stringify(prod));
                 window.localStorage.setItem("productIds", JSON.stringify(prod))
             }

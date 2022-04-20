@@ -10,6 +10,7 @@ import (
 	"image/jpeg"
 	"image/png"
 	"log"
+	"math"
 	"math/rand"
 	"os"
 	"strconv"
@@ -47,13 +48,15 @@ func Index(c *fiber.Ctx) error {
 		token := jwtToken(c)
 		if claims, ok := token.Claims.(jwt.MapClaims); ok && token.Valid {
 			role := int(claims["Role"].(float64))
+			username := claims["Username"].(string)
 			p := "index"
 			fmt.Println(p)
 			err := c.Render(p, fiber.Map{
-				"Title": module.P.Index,
-				"Path":  "/" + p,
-				"Role":  role,
-				"Top20": <-resu,
+				"Title":    module.P.Index,
+				"Path":     "/" + p,
+				"Role":     role,
+				"Username": username,
+				"Top20":    <-resu,
 			})
 			return err
 		} else {
@@ -82,9 +85,9 @@ func AddRecord(c *fiber.Ctx, role int, user string, username string) error {
 		r := bytes.NewReader(b)
 		json.NewDecoder(r).Decode(&items)
 		// fmt.Println(items)
-		items.Rating = 6
+		items.Rating = 0
 		if items.Name == "" || items.Producer == "" || items.Description == "" || items.Price == 0 {
-			me := m{false, "All field required"}
+			me := m{false, "All fields required"}
 			c.JSON(&me)
 		} else {
 			wg.Add(2)
@@ -132,6 +135,7 @@ func AddRecord(c *fiber.Ctx, role int, user string, username string) error {
 					}()
 					items.Images[k] = <-name
 				}
+				math.Round(float64(items.Price))
 				item.InsertOne(context.Background(), &items)
 				wg.Wait()
 				wg.Done()
@@ -167,11 +171,13 @@ func SendHTML(c *fiber.Ctx) error {
 		token := jwtToken(c)
 		if claims, ok := token.Claims.(jwt.MapClaims); ok && token.Valid {
 			role := int(claims["Role"].(float64))
+			username := claims["Username"].(string)
 			fmt.Println(p)
 			err := c.Render(p[1:], fiber.Map{
-				"Title": module.P.Index,
-				"Path":  p,
-				"Role":  role,
+				"Title":    module.P.Index,
+				"Path":     p,
+				"Role":     role,
+				"Username": username,
 			})
 			return err
 		} else {
@@ -188,8 +194,8 @@ func SendHTMLroles(c *fiber.Ctx, role int, user string, username string) error {
 		"Title":    strings.ToUpper(path[1:]),
 		"Path":     path,
 		"Role":     role,
-		"User":     user,
 		"Username": username,
+		"User":     user,
 	})
 	return err
 }
@@ -207,10 +213,11 @@ func Product(c *fiber.Ctx, role int, uID string, username string) error {
 	items.HexID = items.ID.Hex()
 	path := html(c)
 	err = c.Render(path[1:], fiber.Map{
-		"Title":  strings.ToUpper(path[1:]),
-		"Path":   path,
-		"Role":   role,
-		"Result": items,
+		"Title":    strings.ToUpper(path[1:]),
+		"Path":     path,
+		"Role":     role,
+		"Username": username,
+		"Result":   items,
 	})
 	return err
 }
@@ -295,5 +302,49 @@ func ViewComments(c *fiber.Ctx) error {
 		fmt.Println(cs)
 		c.JSON(&cs)
 	}
+	return nil
+}
+
+//Tutaj należałoby przekierować użytkownika do strony payU, odebrać odpowiedź i wysłać adres do Inpost/DPD/DHL/Poczta
+func Deliver(c *fiber.Ctx) error {
+	//Przy takim serwisie jak allegro powinien być jeszcze widoczny seller aby wysłać do odpowiedniego konta zamówienie
+	//W naszym wypadku można stworzyć mapę producentów (Enum) i na podstawie tego wysyłać requesty na odpowiednie ścieżki
+	//Wszystko zależy od modelu sprzedaży sklepu
+
+	var body map[string]interface{}
+	c.BodyParser(&body)
+	var quantity []int
+	var price []float64
+	var id []primitive.ObjectID
+	var bill float64
+	for _, v := range body["products"].([]interface{}) {
+		value, _ := v.(map[string]interface{})
+		q := value["quantity"].(float64)
+		p := math.Round(float64(value["price"].(float64)*100)) / 100
+		quantity = append(quantity, int(q))
+		price = append(price, p)
+		r, err := primitive.ObjectIDFromHex(value["product"].(string))
+		if err != nil {
+			fmt.Println(err)
+		}
+		id = append(id, r)
+		bill += q * p
+	}
+
+	resu, err := item.Find(context.Background(), bson.M{"_id": bson.M{"$in": id}})
+	if err != nil {
+		fmt.Println(err)
+	}
+	fmt.Println(resu.Current.Elements())
+	var it module.Item
+	var its []module.Item
+	for resu.Next(context.Background()) {
+		resu.Decode(&it)
+		its = append(its, it)
+	}
+	fmt.Println(bill, its)
+
+	//W tym miejscu podłączyć PayU, odnotować płatność, po czym wysłać JSON "do magazynu"
+
 	return nil
 }

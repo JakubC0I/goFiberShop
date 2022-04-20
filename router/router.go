@@ -30,4 +30,8 @@ func Router(app *fiber.App) {
 	app.Get("/"+module.P.ViewComments+"/:id", controller.ViewComments)
 
 	app.Get("/"+module.P.Cart, controller.SendHTML)
+
+	app.Get("/"+module.P.Deliv, controller.SendHTML)
+
+	app.Post("/"+module.P.Deliver, controller.Deliver)
 }

@@ -11,6 +11,9 @@
 
 <body>
     <ol>
+        {{ if le .Role 16}}
+        <b>Welcome {{.Username}}</b>
+        {{end}}
         <li><a href="/">Index</a></li>
         <li><a href="http://localhost:3000/cart">Cart</a></li>
         <!-- <li><a href="http://localhost:3000/search"></a>Search</li> -->

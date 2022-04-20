@@ -22,6 +22,8 @@ func main() {
 
 //TODO:
 
+//Trzeba stworzyć stronę, z wybieraniem dowozu (kurier, inpost), wpisanie adresu (przy okazji trzeba się dowiedzieć jak to dobrze zabezpieczyć)
+//Podpiąć pay-U
 //Elasticsearch and searchbar
 //Cart
 //Showing mostly buyed items on index page (elasticsearch?) it is needed to create dummy data to items

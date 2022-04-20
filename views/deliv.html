@@ -1,0 +1,33 @@
+{{template "headHTML" .}}
+
+<div>
+    <p>Delivery adress</p>
+    <form action="/deliver" method="POST" id="form">
+        <label for="city">City</label><br>
+        <input type="text" name="city" id="city"><br>
+        <label for="postcode">Postcode</label><br>
+        <input type="text" name="postcode" id="postcode"><br>
+        <label for="street">Street</label><br>
+        <input type="text" name="street" id="street"><br>
+        <label for="hNum">House number</label><br>
+        <input type="text" name="hNum" id="hNum"><br>
+        <p>Delivery</p>
+        <input type="radio" name="delivery" id="deliveryInpost" value="Inpost" checked>
+        <label for="deliveryInpost">InPost</label><br>
+        <input type="radio" name="delivery" id="deliveryDHL" value="DHL">
+        <label for="deliveryDHL">DHL</label><br>
+        <input type="radio" name="delivery" id="deliveryDPD" value="DPD">
+        <label for="deliveryDPD">DPD</label><br>
+        <input type="radio" name="delivery" id="deliveryPocztaPolska" value="Poczta Polska">
+        <label for="deliveryPocztaPolska">Poczta Polska</label><br>
+
+        <p id="deliCost">Delivery cost: </p>
+</div>
+
+<div>
+    <p id="cost">Total cost:</p>
+</div>
+<input type="submit">
+</form>
+
+{{template "footerHTML" .}}

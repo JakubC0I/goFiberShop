@@ -17,6 +17,8 @@ var P = struct {
 	AddComment   string
 	ViewComments string
 	Cart         string
+	Deliv        string
+	Deliver      string
 }{
 	Index:        "",
 	Dummy:        "dummy",
@@ -28,6 +30,8 @@ var P = struct {
 	AddComment:   "addComment",
 	ViewComments: "viewComments",
 	Cart:         "cart",
+	Deliv:        "deliv",
+	Deliver:      "deliver",
 }
 
 type Item struct {

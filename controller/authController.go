@@ -27,7 +27,7 @@ func Register(c *fiber.Ctx) error {
 	b := b
 	err := c.BodyParser(&b)
 	if err != nil {
-		panic(err)
+		fmt.Println(err)
 	}
 	hashByte := make(chan []byte)
 	wg.Add(2)
@@ -70,14 +70,19 @@ func Login(c *fiber.Ctx) error {
 	go func() {
 		err := c.BodyParser(&b)
 		if err != nil {
-			panic(err)
+			fmt.Println(err)
 		}
 		res := user.FindOne(context.Background(), bson.M{"email": b.Email})
 		erro := res.Decode(&a)
 		aPass <- a.Password
 		bPass <- b.Password
 		if erro != nil {
-			panic(erro)
+			fmt.Println(erro)
+			m := module.Error{
+				Success:      false,
+				ErrorMessage: "Invalid password or email",
+			}
+			c.JSON(m)
 		}
 		wg.Done()
 	}()
@@ -85,7 +90,9 @@ func Login(c *fiber.Ctx) error {
 	go func() {
 		erro := bcrypt.CompareHashAndPassword([]byte(<-aPass), []byte(<-bPass))
 		if erro != nil {
-			panic(erro)
+			m := module.Error{Success: false, ErrorMessage: "Invalid password or email"}
+			fmt.Println(erro)
+			c.JSON(m)
 		} else {
 			err := createJWT(c, a.ID, a.Username, a.Role)
 			if err != nil {
