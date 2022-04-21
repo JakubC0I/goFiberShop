@@ -11,7 +11,8 @@ import (
 )
 
 func main() {
-	engine := html.New("./views", ".html")
+	dir, _ := os.Getwd()
+	engine := html.New(dir+"/src/views", ".html")
 	engine.Templates.ParseGlob("./views/partials/*")
 	app := fiber.New(fiber.Config{
 		Views: engine,
@@ -20,8 +21,8 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	app.Static("/", "./views/statics/scripts/unsecure/")
-	app.Static("/", "./views/statics/images/")
+	app.Static("/", dir+"/src/views/statics/scripts/unsecure/")
+	app.Static("/", dir+"/src/views/statics/images/")
 	router.Router(app)
 	log.Fatal(app.Listen(addr))
 }

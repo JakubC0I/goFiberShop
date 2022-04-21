@@ -17,7 +17,8 @@ import (
 )
 
 var cloudDB string = "mongodb+srv://jakub_user:ck3YJrce9rtuPRdj@cluster0.vdtkf.mongodb.net/ChromebookDB?retryWrites=true&w=majority"
-var dbString string = "mongodb://admin:123456@localhost:27017/?maxPoolSize=20&w=majority"
+
+// var dbString string = "mongodb://admin:123456@localhost:27017/?maxPoolSize=20&w=majority"
 var user *mongo.Collection
 var item *mongo.Collection
 var comment *mongo.Collection
