@@ -1,0 +1,29 @@
+{{ define "headHTML" }}
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ .Title }}</title>
+</head>
+
+<body>
+    <ol>
+        {{ if le .Role 16}}
+        <b>Welcome {{.Username}}</b>
+        {{end}}
+        <li><a href="/">Index</a></li>
+        <li><a href="http://localhost:3000/cart">Cart</a></li>
+        <!-- <li><a href="http://localhost:3000/search"></a>Search</li> -->
+        {{ if eq .Role 32 }}
+        <li><a href="http://localhost:3000/login">Login</a></li>
+        <li><a href="http://localhost:3000/register">Register</a></li>
+        {{ else }}
+        {{ end }}
+        {{ if le .Role 8 }}
+        <li><a href="http://localhost:3000/addRecord">Add record</a></li>
+        {{ end }}
+    </ol>
+    {{ end }}

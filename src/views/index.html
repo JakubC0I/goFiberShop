@@ -1,0 +1,57 @@
+{{ template "headHTML" .}}
+<style>
+    table,
+    th,
+    td {
+        border: 1px solid black;
+    }
+</style>
+<h1>Top 20 Bestsellers</h1>
+<form action="/" method="POST" id="form">
+    <input type="text" name="searchbar">
+    <input type="submit">
+</form>
+<div id="tops">
+    <table style="width:100%">
+        <tr>
+            <th>Name</th>
+            <th>Price</th>
+            <th>Quantity</th>
+            <th>Rating</th>
+            <th>Description</th>
+            <th>Producer</th>
+            <th>Images</th>
+        </tr>
+        {{ range $k, $v := .Top20}}
+        <tr>
+            <td>
+                <h4><a href="http://localhost:3000/product/{{$v.HexID}}">{{$v.Name}}</a></h4>
+            </td>
+            <td>
+                <p id="price">{{$v.Price}}</p>
+            </td>
+            <td>
+                <p>{{$v.Quantity}}</p>
+            </td>
+            <td>
+                <p>{{$v.Rating}}</p>
+            </td>
+            <td>
+                <p>{{$v.Description}}</p>
+            </td>
+            <td>
+                <p>{{$v.Producer}}</p>
+            </td>
+            <td id="images">
+                {{ range $key, $value  := $v.Images}}
+                <img src="{{$value}}" alt="">
+                {{end}}
+            </td>
+        </tr>
+        {{end}}
+    </table>
+</div>
+<div id="searchResults">
+
+</div>
+{{ template "footerHTML" .}}

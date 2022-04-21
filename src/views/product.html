@@ -1,0 +1,58 @@
+{{ template "headHTML" .}}
+<style>
+    table,
+    th,
+    td {
+        border: 1px solid black;
+    }
+</style>
+<h3 id="productName">{{.Result.Name}}</h3><br>
+<p id="oID" hidden>{{.Result.HexID}}</p>
+<form>
+    <input type="number" id="quantity" autocomplete="off" min="1" max="{{.Result.Quantity}}">
+    <input type="submit" value="Add to cart" id="cart" {{if eq .Result.Quantity 0}} disabled {{end}}>
+</form>
+<div id="tops">
+    <table style="width:100%">
+        <tr>
+            <th>Price</th>
+            <th>Quantity</th>
+            <th>Rating</th>
+            <th>Description</th>
+            <th>Producer</th>
+            <th>Images</th>
+        </tr>
+        <tr>
+            <td>
+                <p id="price">{{.Result.Price}}</p>
+            </td>
+            <td>
+                <p>{{.Result.Quantity}}</p>
+            </td>
+            <td>
+                <p>{{.Result.Rating}}</p>
+            </td>
+            <td>
+                <p>{{.Result.Description}}</p>
+            </td>
+            <td>
+                <p>{{.Result.Producer}}</p>
+            </td>
+            <td id="images">
+                {{ range $key, $value := .Result.Images}}
+                <img src="http://localhost:3000/{{$value}}" alt="">
+                {{end}}
+            </td>
+        </tr>
+    </table>
+</div>
+
+<input type="button" value="Click to add comment" id="commentButton">
+<div id="commentForm">
+</div>
+
+
+<input type="button" value="View comments" id="viewComments">
+<div id="comments">
+</div>
+{{ template "footerHTML" .}}
