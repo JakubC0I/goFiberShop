@@ -60,7 +60,7 @@ func Index(c *fiber.Ctx) error {
 			})
 			return err
 		} else {
-			c.Redirect("http://localhost:3000/login")
+			c.Redirect(module.Address + "/login")
 		}
 	}
 	wg.Wait()
@@ -181,7 +181,7 @@ func SendHTML(c *fiber.Ctx) error {
 			})
 			return err
 		} else {
-			c.Redirect("http://localhost:3000/login")
+			c.Redirect(module.Address + "/login")
 		}
 	}
 	return nil

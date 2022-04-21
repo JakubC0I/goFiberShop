@@ -1,10 +1,13 @@
 package module
 
 import (
+	"os"
 	"time"
 
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
+
+var Address string = "http://localhost:" + os.Getenv("PORT")
 
 var P = struct {
 	Index        string

@@ -116,7 +116,7 @@ func IsLoggedIn(next func(c *fiber.Ctx) error) func(c *fiber.Ctx) error {
 		} else {
 			cook := c.Cookies("authentication", "no_cook")
 			c.ClearCookie(cook)
-			c.Redirect("http://localhost:3000/login")
+			c.Redirect(module.Address + "/login")
 		}
 		return nil
 	}
@@ -133,7 +133,7 @@ func IsLoggedInWithRoles(next func(c *fiber.Ctx, r int, user string, username st
 		} else {
 			cook := c.Cookies("authentication", "no_cook")
 			c.ClearCookie(cook)
-			c.Redirect("http://localhost:3000/login")
+			c.Redirect(module.Address + "/login")
 		}
 		return nil
 	}

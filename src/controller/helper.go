@@ -16,13 +16,14 @@ import (
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
+var cloudDB string = "mongodb+srv://jakub_user:ck3YJrce9rtuPRdj@cluster0.vdtkf.mongodb.net/ChromebookDB?retryWrites=true&w=majority"
 var dbString string = "mongodb://admin:123456@localhost:27017/?maxPoolSize=20&w=majority"
 var user *mongo.Collection
 var item *mongo.Collection
 var comment *mongo.Collection
 
 func init() {
-	client, err := mongo.Connect(context.TODO(), options.Client().ApplyURI(dbString))
+	client, err := mongo.Connect(context.TODO(), options.Client().ApplyURI(cloudDB))
 	if err != nil {
 		panic(err)
 	}
@@ -65,7 +66,7 @@ func jwtToken(c *fiber.Ctx) *jwt.Token {
 	var token jwt.Token
 	cookie := c.Cookies("authentication", "no_cookie")
 	if cookie == "no_cookie" {
-		c.Redirect("http://localhost:3000/login")
+		c.Redirect(module.Address + "/login")
 	} else {
 		tkn, err := jwt.Parse(cookie, func(t *jwt.Token) (interface{}, error) {
 			if _, ok := t.Method.(*jwt.SigningMethodHMAC); !ok {
@@ -74,7 +75,7 @@ func jwtToken(c *fiber.Ctx) *jwt.Token {
 			return []byte(secrets.Secrets.SignedKey), nil
 		})
 		if err != nil {
-			c.Redirect("http://localhost:3000/login")
+			c.Redirect(module.Address + "/login")
 			fmt.Println(err)
 		}
 		token = *tkn
