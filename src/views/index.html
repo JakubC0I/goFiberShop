@@ -22,10 +22,11 @@
             <th>Producer</th>
             <th>Images</th>
         </tr>
+        {{.Add}}
         {{ range $k, $v := .Top20}}
         <tr>
             <td>
-                <h4><a href="http://localhost:3000/product/{{$v.HexID}}">{{$v.Name}}</a></h4>
+                <h4><a href="/product/{{.HexID}}">{{$v.Name}}</a></h4>
             </td>
             <td>
                 <p id="price">{{$v.Price}}</p>

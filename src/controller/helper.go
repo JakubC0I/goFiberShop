@@ -16,7 +16,7 @@ import (
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
-var cloudDB string = "mongodb+srv://jakub_user:ck3YJrce9rtuPRdj@cluster0.vdtkf.mongodb.net/ChromebookDB?retryWrites=true&w=majority"
+var dbString string = "mongodb+srv://jakub_user:ck3YJrce9rtuPRdj@cluster0.vdtkf.mongodb.net/ChromebookDB?retryWrites=true&w=majority"
 
 // var dbString string = "mongodb://admin:123456@localhost:27017/?maxPoolSize=20&w=majority"
 var user *mongo.Collection
@@ -24,7 +24,7 @@ var item *mongo.Collection
 var comment *mongo.Collection
 
 func init() {
-	client, err := mongo.Connect(context.TODO(), options.Client().ApplyURI(cloudDB))
+	client, err := mongo.Connect(context.TODO(), options.Client().ApplyURI(dbString))
 	if err != nil {
 		panic(err)
 	}

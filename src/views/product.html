@@ -40,7 +40,7 @@
             </td>
             <td id="images">
                 {{ range $key, $value := .Result.Images}}
-                <img src="http://localhost:3000/{{$value}}" alt="">
+                <img src="{{.Add}}/{{$value}}" alt="">
                 {{end}}
             </td>
         </tr>

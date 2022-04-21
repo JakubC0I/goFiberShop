@@ -28,6 +28,13 @@ type m struct {
 	ErrorMsg string `json:"errormsg"`
 }
 
+var Dir string = dir()
+
+func dir() string {
+	dir, _ := os.Getwd()
+	return dir
+}
+
 func Index(c *fiber.Ctx) error {
 	cook := c.Cookies("authentication", "no_cookie")
 	// normalnie powinno być wysyłane na podstawie najlepszych ocen (elasticsearch)
@@ -116,13 +123,13 @@ func AddRecord(c *fiber.Ctx, role int, user string, username string) error {
 							imgPng, _ := png.Decode(<-reader)
 							sid = sid + "png"
 							name <- sid
-							out, _ := os.Create("views/statics/images/" + sid)
+							out, _ := os.Create(Dir + "src/views/statics/images/" + sid)
 							png.Encode(out, imgPng)
 						case "image/jpeg":
 							imgJpeg, _ := jpeg.Decode(<-reader)
 							sid = sid + "jpeg"
 							name <- sid
-							out, _ := os.Create("views/statics/images/" + sid)
+							out, _ := os.Create(Dir + "src/views/statics/images/" + sid)
 							err := jpeg.Encode(out, imgJpeg, &jpeg.Options{
 								Quality: 100,
 							})
