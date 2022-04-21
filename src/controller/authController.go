@@ -162,8 +162,8 @@ func SecureJS(c *fiber.Ctx, role int, user string, username string) error {
 	if role <= 8 {
 		p := c.Path()
 		r, _ := os.Getwd()
-		c.SendFile(r + "/views/statics" + p)
-		fmt.Println(r + "/views/statics" + p)
+		c.SendFile(r + "/src/views/statics" + p)
+		fmt.Println(r + "/src/views/statics" + p)
 	} else {
 		m := m{Success: false, ErrorMsg: "Not authorized"}
 		c.Status(fiber.StatusNetworkAuthenticationRequired)

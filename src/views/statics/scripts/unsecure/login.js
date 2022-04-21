@@ -14,7 +14,7 @@ form.addEventListener("submit", async (e) => {
     res.json().then((result) => {
         console.log(result.success);
         if (result.success) {
-            window.location.replace("http://localhost:3000/")
+            window.location.replace("/")
         }
     })
 })

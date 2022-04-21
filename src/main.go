@@ -10,6 +10,7 @@ import (
 	"github.com/gofiber/template/html"
 )
 
+//Blokada na spamowanie Register
 func main() {
 	dir, _ := os.Getwd()
 	engine := html.New(dir+"/src/views", ".html")
